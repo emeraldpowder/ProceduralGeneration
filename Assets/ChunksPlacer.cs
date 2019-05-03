@@ -25,7 +25,7 @@ public class ChunksPlacer : MonoBehaviour
 
     private void SpawnChunk()
     {
-        Chunk newChunk = Instantiate(ChunkPrefabs[Random.Range(0, ChunkPrefabs.Length)]);
+        Chunk newChunk = Instantiate(GetRandomChunk());
         newChunk.transform.position = spawnedChunks[spawnedChunks.Count - 1].End.position - newChunk.Begin.localPosition;
         spawnedChunks.Add(newChunk);
 
@@ -34,5 +34,28 @@ public class ChunksPlacer : MonoBehaviour
             Destroy(spawnedChunks[0].gameObject);
             spawnedChunks.RemoveAt(0);
         }
+    }
+
+    private Chunk GetRandomChunk()
+    {
+        List<float> chances = new List<float>();
+        for (int i = 0; i < ChunkPrefabs.Length; i++)
+        {
+            chances.Add(ChunkPrefabs[i].ChanceFromDistance.Evaluate(Player.transform.position.z));
+        }
+
+        float value = Random.Range(0, chances.Sum());
+        float sum = 0;
+
+        for (int i = 0; i < chances.Count; i++)
+        {
+            sum += chances[i];
+            if (value < sum)
+            {
+                return ChunkPrefabs[i];
+            }
+        }
+
+        return ChunkPrefabs[ChunkPrefabs.Length-1];
     }
 }
